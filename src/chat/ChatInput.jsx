@@ -1,4 +1,4 @@
-import React, { useState,Component } from "react";
+import React, { useState } from "react";
 import PropTypes from 'prop-types';
 import { Input,Button } from 'antd';
 
@@ -36,7 +36,7 @@ export default function ChatInput(props) {
   return (
         <div className='chat-input'>
           <Input
-              placeholder='Please input message'
+              placeholder='参加者全員にメッセージを送信'
               onChange={onInputChange}
               onPressEnter={onInputKeyUp}
               value={inputMessage}/>

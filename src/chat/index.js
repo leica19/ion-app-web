@@ -62,7 +62,7 @@ export default function ChatFeed(props) {
     <div id="chat-panel" className='chat-panel'>
 
       <div className='title-panel'>
-        <span className='title-chat'>Chat</span>
+        <span className='title-chat'>通話中のメッセージ</span>
       </div>
 
       <div ref={chat} className='chat-history'>

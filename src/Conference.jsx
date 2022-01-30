@@ -7,43 +7,44 @@ import * as Ion from "ion-sdk-js/lib/connector";
 function Conference(props, ref) {
 
   const [streams, setStreams] = useState([])
-  const [localStreamObj, setLocalStream] = useState({stream:null})
-  const [localScreenObj, setLocalScreen] = useState({stream:null})
+  const [localStreamObj, setLocalStream] = useState({ stream: null })
+  const [localScreenObj, setLocalScreen] = useState({ stream: null })
   const [audioMuted, setAudioMuted] = useState(false)
   const [videoMuted, setVideoMuted] = useState(false)
 
   const doCleanUp = async () => {
-    console.log("doCleanUp localStreamObj=", localStreamObj, ", localScreenObj=", localScreenObj)
+    // console.log("doCleanUp localStreamObj=", localStreamObj, ", localScreenObj=", localScreenObj)
     if (localStreamObj && localStreamObj.stream) {
       await unpublish(localStreamObj.stream)
 
       localStreamObj.stream = null
       setLocalStream(localStreamObj)
     }
-  
+
     if (localScreenObj && localScreenObj.stream) {
       await unpublish(localScreenObj.stream)
       localScreenObj.stream = null
       setLocalScreen(localScreenObj)
     }
- 
-    console.log("doCleanUp streams=", streams)
+
+    // console.log("doCleanUp streams=", streams)
     streams.map(async item => {
       // await item.stream.unsubscribe();
     });
     setStreams([])
   };
 
-  const notificationTip = (message, description) => {
-    notification.info({
-      message: message,
-      description: description,
-      placement: "bottomRight"
-    });
-  };
+  // 未使用？
+  // const notificationTip = (message, description) => {
+  //   notification.info({
+  //     message: message,
+  //     description: description,
+  //     placement: "bottomRight"
+  //   });
+  // };
 
-  const unpublish = async (stream)=> {
-    console.log("stream.unpublish stream=", stream);
+  const unpublish = async (stream) => {
+    // console.log("stream.unpublish stream=", stream);
     if (stream) {
       await stopMediaStream(stream);
     }
@@ -78,19 +79,22 @@ function Conference(props, ref) {
       muteMediaTrack(type, enabled) {
         doMuteMediaTrack(type, enabled)
       },
-      cleanUp(){
+      cleanUp() {
         doCleanUp();
       }
     }),
     []
   );
 
+  // @enabled ローカルのvideoがonかどうか
   const doHandleLocalStream = async (enabled) => {
+
+    // 一部のpropだけを使用
     const { settings, rtc, peers } = props;
-    
+
     let _streams = JSON.parse(JSON.stringify(streams));
     rtc.ontrack = (track, stream) => {
-      console.log("got track", track.id, "for stream", stream.id);
+      // console.log("got track: id = ", track.id, "for stream: id = ", stream.id);
       if (track.kind === "video") {
         track.onunmute = () => {
 
@@ -103,9 +107,10 @@ function Conference(props, ref) {
 
           if (!found) {
             setTimeout(() => {
-              console.log("stream.id:::" + stream.id);
+              // console.log("doHandleLocalStream -> stream.id:::" + stream.id);
               let name = 'Guest';
-              console.log("peers=", peers, "stream=", stream);
+              // console.log("doHandleLocalStream: peers =", peers);
+              // console.log("doHandleLocalStream: stream =", stream);
               peers.forEach((item) => {
                 if (item["id"] == stream.id) {
                   name = item.name;
@@ -126,7 +131,7 @@ function Conference(props, ref) {
         };
 
         track.onmute = () => {
-          console.log("onmute:::" + stream.id);
+          // console.log("onmute: stream.id = " + stream.id);
           updateMuteStatus(stream, true);
         }
 
@@ -143,7 +148,11 @@ function Conference(props, ref) {
         video: true,
       })
         .then((media) => {
-          console.log("rtc.publish media=", media)
+          // get local mediastream is "ok"
+          console.log("rtc.publish local media =", media)
+          /* media =
+          RTCPeerConnectionを含む
+          */
           rtc.publish(media)
           localStreamObj.stream = media
           setLocalStream(localStreamObj)
@@ -152,6 +161,7 @@ function Conference(props, ref) {
           console.log("handleLocalStream error => " + e);
         });
     } else {
+      // 必要?? enabled = falseのパターンはないような、
       if (localStreamObj.stream) {
         unpublish(localStreamObj.stream, rtc);
         localStreamObj.stream = null;
@@ -174,9 +184,9 @@ function Conference(props, ref) {
   }
 
   const updateMuteStatus = (stream, muted) => {
-    console.log("updateMuteStatus stream=", stream, ", muted=", muted);
-    setStreams((p)=>{
-      return p.map(item=>{
+    // console.log("updateMuteStatus stream=", stream, ", muted=", muted);
+    setStreams((p) => {
+      return p.map(item => {
         if (item.id == stream.id) {
           item.muted = muted;
         }
@@ -186,7 +196,7 @@ function Conference(props, ref) {
   }
 
   const doHandleScreenSharing = async (enabled) => {
-    const {settings, screenSharingClick, rtc } = props;
+    const { settings, screenSharingClick, rtc } = props;
     if (enabled) {
       localScreenObj.stream = await Ion.LocalStream.getDisplayMedia({
         codec: settings.codec.toUpperCase(),
@@ -213,18 +223,18 @@ function Conference(props, ref) {
   };
 
   const stopMediaStream = async (stream) => {
-    console.log("stopMediaStream stream=", stream);
+    // console.log("stopMediaStream stream=", stream);
     let tracks = stream.getTracks();
     for (let i = 0, len = tracks.length; i < len; i++) {
       await tracks[i].stop();
-      console.log("stopMediaStream track=", tracks[i]);
+      // console.log("stopMediaStream track=", tracks[i]);
     }
   };
 
   const onChangeVideoPosition = data => {
     let id = data.id;
     let index = data.index;
-    console.log("_onChangeVideoPosition id:" + id + "  index:" + index);
+    // console.log("_onChangeVideoPosition id:" + id + "  index:" + index);
 
     if (index == 0) {
       return;
@@ -295,6 +305,7 @@ function Conference(props, ref) {
         <div className="small-video-list">
           {streams.map((item, index) => {
             return index > 0 ? (
+              // remote steam
               <SmallVideoView
                 key={item.id}
                 id={item.id}

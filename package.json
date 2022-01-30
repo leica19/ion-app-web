@@ -33,6 +33,7 @@
     "webpack-dev-server": "3.11.3"
   },
   "dependencies": {
+    "@tensorflow-models/body-pix": "^2.2.0",
     "antd": "^3.26.16",
     "copy-webpack-plugin": "^5.0.5",
     "ion-sdk-js": "^1.8.1",

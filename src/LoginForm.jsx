@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Form, Icon, Input, Button, Checkbox, notification, Avatar, Badge, Tooltip } from "antd";
+import { Form, Icon, Input, Button, Checkbox } from "antd";
 import { reactLocalStorage } from "reactjs-localstorage";
 import "../styles/css/login.scss";
 
@@ -10,7 +10,7 @@ function LoginForm(props) {
 
   useEffect(() => {
     const { form } = props;
-    console.log("url:" + window.location.protocol + window.location.host + "  " + window.location.pathname);
+    // console.log("url:" + window.location.protocol + window.location.host + "  " + window.location.pathname);
 
     let params = getRequest();
 
@@ -58,7 +58,7 @@ function LoginForm(props) {
   };
 
   const cleanup = async () => {
-    
+
   };
 
   const handleSubmit = e => {
@@ -67,7 +67,7 @@ function LoginForm(props) {
       if (!err) {
         const handleLogin = props.handleLogin;
         handleLogin(values);
-        console.log("Received values of form: ", values);
+        // console.log("Received values of form: ", values);
       }
     });
   }
@@ -93,23 +93,23 @@ function LoginForm(props) {
       <Form onSubmit={handleSubmit} className="login-form">
         <Form.Item>
           {getFieldDecorator("roomId", {
-            rules: [{ required: true, message: "Please enter your room Id!" }]
+            rules: [{ required: true, message: "ルームIDを入力ください" }]
           })(
             <Input
               prefix={<Icon type="team" className="login-input-icon" />}
-              placeholder="Room Id"
+              placeholder="ルームID"
             />
           )}
         </Form.Item>
         <Form.Item>
           {getFieldDecorator("displayName", {
-            rules: [{ required: true, message: "Please enter your Name!" }]
+            rules: [{ required: true, message: "表示名を入力ください" }]
           })(
             <Input
               prefix={
                 <Icon type="contacts" className="login-input-icon" />
               }
-              placeholder="Display Name"
+              placeholder="表示名"
             />
           )}
         </Form.Item>
@@ -119,13 +119,13 @@ function LoginForm(props) {
             initialValue: true,
           })(
             <Checkbox>
-              Audio only
+              音声のみ
             </Checkbox>
           )}
         </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit" className="login-join-button">
-            Join
+            入室
           </Button>
         </Form.Item>
       </Form>

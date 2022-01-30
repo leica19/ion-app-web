@@ -3,6 +3,7 @@ import MicrophoneOffIcon from "mdi-react/MicrophoneOffIcon";
 import VideocamOffIcon from "mdi-react/VideocamOffIcon";
 import { Avatar, Button } from 'antd';
 import PictureInPictureBottomRightOutlineIcon from "mdi-react/PictureInPictureBottomRightOutlineIcon";
+// const bodyPix = require('@tensorflow-models/body-pix');
 
 export default function LocalVideoView(props) {
 
@@ -16,6 +17,33 @@ export default function LocalVideoView(props) {
       videoRef.current.srcObject = null;
     }
   },[])
+
+  // const blurPicture = () => {
+  //   console.log("clicked blurPicture");
+  //   options = {
+  //     multiplier: 0.75,
+  //     stride: 32,
+  //     quantBytes: 4
+  //   }
+  //   bodyPix.load(options)
+  //     .then(net => perform(net))
+  //     .catch(err => console.log(err))
+  // }
+
+  // async function perform(net) {
+
+  //   while (startBtn.disabled && blurBtn.hidden) {
+  //     const segmentation = await net.segmentPerson(video);
+  
+  //     const backgroundBlurAmount = 6;
+  //     const edgeBlurAmount = 2;
+  //     const flipHorizontal = true;
+  
+  //     bodyPix.drawBokehEffect(
+  //       canvas, videoElement, segmentation, backgroundBlurAmount,
+  //       edgeBlurAmount, flipHorizontal);
+  //   }
+  // }
 
   const onMinimizeClick = () => {
     setMinimize(!minimize);
@@ -43,6 +71,11 @@ export default function LocalVideoView(props) {
         {!minimize && audioMuted && <MicrophoneOffIcon size={18} color="white" />}
         {!minimize && videoMuted && <VideocamOffIcon size={18} color="white" />}
 
+        <Button
+          size="small"
+          onClick={() => blurPicture()}
+        >
+        </Button>
         <Button
           ghost
           size="small"

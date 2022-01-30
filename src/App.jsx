@@ -23,17 +23,18 @@ import MediaSettings from "./settings";
 import ToolShare from "./ToolShare";
 import ChatFeed from "./chat/index";
 import Message from "./chat/message";
-import pionLogo from "../public/pion-logo.svg";
 import "../styles/css/app.scss";
 
 import LoginForm from "./LoginForm";
 import Conference from "./Conference";
+//@see https://github.com/pion/ion-sdk-js/blob/master/src/connector/room.ts
 import * as Ion from "ion-sdk-js/lib/connector";
 import { v4 as uuidv4 } from "uuid";
 
 const ForwardRefConference = forwardRef(Conference);
 
-function App(props) {
+function App() {
+
   const conference = useRef(null);
 
   const [login, setLogin] = useState(false);
@@ -52,9 +53,6 @@ function App(props) {
   const [connector, setConnector] = useState(null);
   const [room, setRoom] = useState(null);
   const [rtc, setRTC] = useState(null);
-  const [name, setname] = useState('')
-
-
 
   let settings = {
     selectedAudioDevice: "",
@@ -89,56 +87,70 @@ function App(props) {
   };
 
   const handleJoin = async (values) => {
+
     setLoading(true);
     // open chat window
     // openOrCloseLeftContainer(!collapsed);
-    let url =
-      window.location.protocol +
-      "//" +
-      window.location.hostname +
-      ":" + "5551";
-      // Note if you're running this inside docker you'll need to remove the ":5551" and possibly add the following line so that caddy can proxy correctly
-      // + window.location.port;
-    console.log("Connect url:" + url);
+    let url = window.location.protocol + "//" + window.location.hostname + ":" + "5551";
+    // +   window.location.port;
+    // Note if you're running this inside docker you'll need to remove the ":5551" and possibly add the following line so that caddy can proxy correctly
+    // + window.location.port;
+
+    //  console.log("Connect url:" + url);
+
     let connector = new Ion.Connector(url, "token");
+
     setConnector(connector);
-   
+
     let room = new Ion.Room(connector);
     let rtc = new Ion.RTC(connector);
     setRoom(room);
     setRTC(rtc);
-    
+
+    // @see https://github.com/pion/ion-sdk-js/blob/master/src/connector/room.ts
     room.onjoin = (success, reason) => {
       console.log("onjoin: success=", success, ", reason=", reason);
-      onJoin(values, sid, uid);
+      // console.log("when onlogin: uid = " + uid);
+      onJoin(values, sid, uid); // sid = room.id
     };
 
+    // @see https://github.com/pion/ion-sdk-js/blob/master/src/connector/room.ts
     room.onleave = (reason) => {
-      console.log("onleave: ", reason);
+       console.log("room.onleave");
     };
 
     room.onpeerevent = (ev) => {
-      console.log(
-        "[onpeerevent]: state = ",
-        ev.state,
-        ", peer = ",
-        ev.peer.uid,
-        ", name = ",
-        ev.peer.displayname
-      );
+
+      console.log("room.onpeerevent");
+
+      // console.log(
+      //   "[onpeerevent]: state = ",
+      //   ev.state,
+      //   ", peer = ",
+      //   ev.peer.uid,
+      //   ", name = ",
+      //   ev.peer.displayname
+      // );
+
+//       export enum PeerState {
+//     NONE,
+//     JOIN,
+//     UPDATE,
+//     LEAVE,
+// }
 
       if (ev.state == Ion.PeerState.JOIN) {
         notificationTip(
           "Peer Join",
-          "peer => " + ev.peer.displayname+ ", join!"
+          "peer => " + ev.peer.displayname + ", が参加しました。"
         );
-        onSystemMessage(ev.peer.displayname + ", join!");
+        onSystemMessage(ev.peer.displayname + ", が参加しました。");
       } else if (ev.state == Ion.PeerState.LEAVE) {
         notificationTip(
           "Peer Leave",
-          "peer => " + ev.peer.displayname + ", leave!"
+          "peer => " + ev.peer.displayname + ", 退出しました。"
         );
-        onSystemMessage(ev.peer.displayname + ", leave!");
+        onSystemMessage(ev.peer.displayname + ", が退出しました。");
       }
 
       let peerInfo = {
@@ -157,16 +169,17 @@ function App(props) {
       if (!find) {
         _peers.push(peerInfo);
       }
-      console.log("setPeers peers= ", peers);
+      // // console.log("setPeers peers= ", peers);
       setPeers([..._peers]);
 
     };
 
+    // メッセージ取得
     room.onmessage = (msg) => {
       const uint8Arr = new Uint8Array(msg.data);
       const decodedString = String.fromCharCode.apply(null, uint8Arr);
-      const json  = JSON.parse(decodedString);
-      console.log("onmessage msg= ", msg, "json= ", json);
+      const json = JSON.parse(decodedString);
+      // console.log("onmessage msg= ", msg, "json= ", json);
       let _messages = messages;
       if (uid != msg.from) {
         let _uid = 1;
@@ -177,16 +190,16 @@ function App(props) {
             senderName: json.msg.name,
           })
         );
-        console.log("setMessages msg= ", _messages);
+        // console.log("setMessages msg= ", _messages);
         setMessages([..._messages]);
       }
     };
-    
+
     room
       .join(
         {
-          sid: values.roomId,
-          uid: uid,
+          sid: values.roomId, // foom value
+          uid: uid, // uuidをjoinへセット(uuidv4)
           displayname: values.displayName,
           extrainfo: "",
           destination: "webrtc://ion/peer1",
@@ -199,52 +212,59 @@ function App(props) {
         ""
       )
       .then((result) => {
-        console.log(
-          "[join] result: success " +
-            result?.success +
-            ", room info: " +
-            JSON.stringify(result?.room)
-        );
-        
+
+        //  console.log(
+        //   "[join] result: success " +
+        //   result?.success +
+        //   ", room info: " +
+        //   JSON.stringify(result?.room)
+        // );
+
         if (!result?.success) {
-          console.log("[join] failed: " + result?.reason);
+          // console.log("[join] failed: " + result?.reason);
           return
         }
 
         rtc.ontrackevent = function (ev) {
-          console.log(
-            "[ontrackevent]: \nuid = ",
-            ev.uid,
-            " \nstate = ",
-            ev.state,
-            ", \ntracks = ",
-            JSON.stringify(ev.tracks)
-          );
+
+          // console.log(
+          //   "[ontrackevent]: \nuid = ",
+          //   ev.uid,
+          //   " \nstate = ",
+          //   ev.state,
+          //   ", \ntracks = ",
+          //   JSON.stringify(ev.tracks)
+          // );
+
           let _peers = peers;
           _peers.forEach((item) => {
             ev.tracks.forEach((track) => {
+              // track = MediaStreamTrack
+              // ref: https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrack
+              // MediaStreamTrack.id = track.id = GUID(e.g. de8a2a16-9f93-4e64-9522-65f24d6eaa61)
+              // MediaStreamTrack.id = "video|audio"
               if (item.uid == ev.uid && track.kind == "video") {
-                console.log("track=", track)
-                // item["id"] = JSON.stringify(ev.tracks)[0].id;
+                // console.log("MediaStreamTrack =", track)
+                item["id"] = JSON.stringify(ev.tracks)[0].id;
                 item["id"] = track.stream_id;
-                console.log("ev.streams[0].id:::" + item["id"]);
+                // console.log("ev.streams[0].id:::" + item["id"]);
               }
             });
           });
-            
+
           setPeers([..._peers]);
         };
 
         rtc.ondatachannel = ({ channel }) => {
-          console.log("[ondatachannel] channel=", channel);
+          // console.log("[ondatachannel] channel=", channel);
           channel.onmessage = ({ data }) => {
-            console.log("[ondatachannel] channel onmessage =", data);
+            // console.log("[ondatachannel] channel onmessage =", data);
           };
         };
-      
+
         rtc.join(values.roomId, uid)
-        console.log("rtc.join")
-        
+        // console.log("rtc.join")
+
       });
 
     window.onunload = async () => {
@@ -252,13 +272,16 @@ function App(props) {
     };
   };
 
+  // @values ログインのform parameters
   const onJoin = async (values, sid, uid) => {
+
+    // ログイン情報をローカルストレージに保存
     reactLocalStorage.remove("loginInfo");
     reactLocalStorage.setObject("loginInfo", values);
 
     setLogin(true);
     setLoading(false);
-    setSid(sid);
+    setSid(sid); // room.id
     setUid(uid);
     setLoginInfo(values);
     setLocalVideoEnabled(!values.audioOnly);
@@ -266,21 +289,22 @@ function App(props) {
     conference.current.handleLocalStream(true);
 
     notificationTip(
-      "Connected!",
-      "Welcome to the ion room => " + values.roomId
+      "入室に成功しました",
+      "ルームID => " + values.roomId
     );
+
   };
 
   const handleLeave = async () => {
     confirm({
-      title: "Leave Now?",
-      content: "Do you want to leave the room?",
+      title: "",
+      content: "本当に退室しますか？",
       async onOk() {
         await cleanUp();
         setLogin(false);
       },
       onCancel() {
-        console.log("Cancel");
+        // console.log("Cancel");
       },
     });
   };
@@ -373,7 +397,8 @@ function App(props) {
 
   const onSendMessage = (msg) => {
     let info = reactLocalStorage.getObject("loginInfo");
-    console.log("broadcast to room: ", info.roomId, " message: " + msg);
+
+    // console.log("broadcast to room: ", info.roomId, " message: " + msg);
 
     var data = {
       uid: uid,
@@ -406,9 +431,7 @@ function App(props) {
     <Layout className="app-layout">
       <Header className="app-header">
         <div className="app-header-left">
-          <a href="https://pion.ly" target="_blank">
-            <img src={pionLogo} className="app-logo-img" />
-          </a>
+          <p>N:N SFU検証</p>
         </div>
         {login ? (
           <div className="app-header-tool">
@@ -505,7 +528,7 @@ function App(props) {
               <Content style={{ flex: 1 }}>
                 <ForwardRefConference
                   uid={uid}
-                  sid={sid}
+                  sid={sid} // room id
                   collapsed={collapsed}
                   connector={connector}
                   room={room}
@@ -554,9 +577,11 @@ function App(props) {
             </Layout>
           </Layout>
         ) : loading ? (
-          <Spin size="large" tip="Connecting..." />
+          // 接続中
+          <Spin size="large" tip="接続中..." />
         ) : (
-          <Card title="Join to Ion" className="app-login-card">
+          // 未入室
+          <Card title="N:N SFU" className="app-login-card">
             <LoginForm handleLogin={handleJoin} />
           </Card>
         )}
@@ -564,11 +589,7 @@ function App(props) {
 
       {!login && (
         <Footer className=".app-footer">
-          Powered by{" "}
-          <a href="https://pion.ly" target="_blank">
-            Pion
-          </a>{" "}
-          WebRTC.
+          <p>Powerd by unexplainable anger</p>
         </Footer>
       )}
     </Layout>

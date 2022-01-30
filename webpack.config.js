@@ -4,7 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = (env) => {
   const isEnvProduction = !!env && env.production;
-  console.log('Production: ', isEnvProduction);
+  // console.log('Production: ', isEnvProduction);
 
   return {
   devtool: 'cheap-module-eval-source-map',

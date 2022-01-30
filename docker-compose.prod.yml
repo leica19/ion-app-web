@@ -16,8 +16,8 @@ services:
       - ionnet
     environment:
       # must set, used by caddy to download free certificate
-      - WWW_URL=yourdomain
-      - ADMIN_EMAIL=youremail
+      - WWW_URL=https://webrtc.leica.com
+      - ADMIN_EMAIL=blk3050leica@gmail.com
 
 volumes:
   caddy:

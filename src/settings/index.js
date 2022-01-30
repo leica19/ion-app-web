@@ -31,7 +31,7 @@ const closeMediaStream = function (stream) {
         }
         // Deprecated by the spec, but still in use.
     } else if (typeof stream.stop === 'function') {
-        console.log('closeMediaStream() | calling stop() on the MediaStream');
+        // console.log('closeMediaStream() | calling stop() on the MediaStream');
         stream.stop();
     }
 }
@@ -74,7 +74,7 @@ export default function MediaSettings(props) {
             window.AudioContext = window.AudioContext || window.webkitAudioContext;
             window.audioContext = new AudioContext();
         } catch (e) {
-            console.log('Web Audio API not supported.');
+            // console.log('Web Audio API not supported.');
         }
     }, [])
 
@@ -118,12 +118,12 @@ export default function MediaSettings(props) {
 
             audioDevices.map((device, index) => {
                 if (selectedAudioDevice == device.deviceId) {
-                    console.log("Selected audioDevice::" + JSON.stringify(device));
+                    // console.log("Selected audioDevice::" + JSON.stringify(device));
                 }
             });
             videoDevices.map((device, index) => {
                 if (selectedVideoDevice == device.deviceId) {
-                    console.log("Selected videoDevice::" + JSON.stringify(device));
+                    // console.log("Selected videoDevice::" + JSON.stringify(device));
                 }
             });
         });
@@ -178,7 +178,7 @@ export default function MediaSettings(props) {
     }
 
     const handleOk = (e) => {
-        console.log(e);
+        // console.log(e);
         setVisible(false)
         stopPreview();
         if (props.onMediaSettingsChanged !== undefined) {
