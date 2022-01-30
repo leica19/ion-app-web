@@ -72,11 +72,6 @@ export default function LocalVideoView(props) {
         {!minimize && videoMuted && <VideocamOffIcon size={18} color="white" />}
 
         <Button
-          size="small"
-          onClick={() => blurPicture()}
-        >
-        </Button>
-        <Button
           ghost
           size="small"
           type="link"
